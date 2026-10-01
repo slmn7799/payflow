@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -7,13 +9,13 @@ client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
-def clear_customers():
+def clear_customers() -> Iterator[None]:
     customers.clear()
     yield
     customers.clear()
 
 
-def test_create_customer():
+def test_create_customer() -> None:
     response = client.post("/v1/customers", json={"email": "a@x.com", "name": "Ann"})
 
     assert response.status_code == 200
@@ -25,13 +27,13 @@ def test_create_customer():
     assert isinstance(body["created"], int)
 
 
-def test_retrieve_missing_customer_returns_404():
+def test_retrieve_missing_customer_returns_404() -> None:
     response = client.get("/v1/customers/cus_does_not_exist")
 
     assert response.status_code == 404
 
 
-def test_create_then_retrieve_customer():
+def test_create_then_retrieve_customer() -> None:
     created = client.post("/v1/customers", json={"email": "a@x.com"}).json()
 
     response = client.get(f"/v1/customers/{created['id']}")
@@ -40,7 +42,7 @@ def test_create_then_retrieve_customer():
     assert response.json() == created
 
 
-def test_list_customers():
+def test_list_customers() -> None:
     client.post("/v1/customers", json={"email": "a@x.com"})
     client.post("/v1/customers", json={"email": "b@x.com"})
 
