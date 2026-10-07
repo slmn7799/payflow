@@ -3,16 +3,19 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app, customers
+from app.api.dependencies import get_customer_repository
+from app.main import app
+from app.repositories.customers import InMemoryCustomerRepository
 
 client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
-def clear_customers() -> Iterator[None]:
-    customers.clear()
+def fresh_repository() -> Iterator[None]:
+    repo = InMemoryCustomerRepository()
+    app.dependency_overrides[get_customer_repository] = lambda: repo
     yield
-    customers.clear()
+    app.dependency_overrides.clear()
 
 
 def test_create_customer() -> None:
